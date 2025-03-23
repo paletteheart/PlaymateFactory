@@ -29,15 +29,27 @@ for i=1,#paths do
 end
 
 asset.nose = {}
-asset.nose[1] = {} -- medium noses
+asset.nose[1] = {} -- small noses
 asset.nose[2] = {} -- medium noses
-asset.nose[3] = {} -- medium noses
+asset.nose[3] = {} -- large noses
 paths = pd.file.listFiles("assets/face/nose/medium")
 local noseNum = #paths
 for i=1,noseNum do
 	asset.nose[1][i] = gfx.image.new("assets/face/nose/small/noseS"..i)
 	asset.nose[2][i] = gfx.image.new("assets/face/nose/medium/noseM"..i)
 	asset.nose[3][i] = gfx.image.new("assets/face/nose/large/noseL"..i)
+end
+
+asset.mouth = {}
+asset.mouth[1] = {} -- small mouths
+asset.mouth[2] = {} -- medium mouths
+asset.mouth[3] = {} -- large mouths
+paths = pd.file.listFiles("assets/face/mouth/medium")
+local mouthNum = #paths
+for i=1,mouthNum do
+	asset.mouth[1][i] = gfx.image.new("assets/face/mouth/small/mouthS"..i)
+	asset.mouth[2][i] = gfx.image.new("assets/face/mouth/medium/mouthM"..i)
+	asset.mouth[3][i] = gfx.image.new("assets/face/mouth/large/mouthL"..i)
 end
 
 -- Define the way features are drawn
@@ -380,14 +392,14 @@ face = {
 		type = 1,
 		y = 0.5,
         size = size.medium,
-		invert = false
+		invert = true
 	},
 	mouth = {
 		type = 1,
-		y = 0.5,
+		y = 1,
         size = size.medium,
-        mirror = false,
-		invert = false
+        mirror = true,
+		invert = true
 	},
 
 }
@@ -422,7 +434,7 @@ limit.face = {
 		}
 	},
 	mouth = {
-		type = 1,
+		type = mouthNum,
 		y = {
 			min = -3,
 			max = 3
@@ -430,7 +442,7 @@ limit.face = {
 	}
 }
 
-skin = 1 -- 1 is pure white, 0 is pitch black
+skin = 0.5 -- 1 is pure white, 0 is pitch black
 
 handRadius = 6 -- gets modified by average body size
 footWidth = 20 -- gets modified by average body size

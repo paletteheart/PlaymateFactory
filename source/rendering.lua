@@ -79,9 +79,21 @@ function getFace()
 	local midpoint = faceSize/2
 	local faceImage = gfx.image.new(faceSize, faceSize)
 
-    -- Draw the eyes
 	local l = limit.face
 	gfx.pushContext(faceImage)
+		-- draw mouth
+		local mouthW
+		local mouthH
+        if face.mouth.size == 1 then mouthW = 6 mouthH = 5 elseif face.mouth.size == 2 then mouthW = 10 mouthH = 7 else mouthW = 14 mouthH = 10 end
+        if face.mouth.invert == true then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
+		local mouthY = face.mouth.y*(l.mouth.y.max-l.mouth.y.min)+l.mouth.y.min
+		local mirrorMouth = gfx.kImageUnflipped
+		if face.mouth.mirror then mirrorMouth = gfx.kImageFlippedX end
+		local mouthAdjustment = 0
+		if heads[head.type].species == species.dog then mouthAdjustment = 2 end
+		asset.mouth[face.mouth.size][face.mouth.type]:draw(midpoint-mouthW/2-mouthAdjustment, midpoint+mouthY+12-mouthH/2, mirrorMouth)
+        gfx.setImageDrawMode(gfx.kDrawModeCopy)
+
         -- draw left eye
         local eyeSize
         if face.eyes.sizeL == 1 then eyeSize = 6 elseif face.eyes.sizeL == 2 then eyeSize = 10 else eyeSize = 14 end
@@ -90,22 +102,43 @@ function getFace()
 		local eyeY = face.eyes.y*(l.eyes.y.max-l.eyes.y.min)+l.eyes.y.min-2
 		local mirrorLeft = gfx.kImageUnflipped
 		if eyes[face.eyes.typeL].mirrorLeft then mirrorLeft = gfx.kImageFlippedX end
-		asset.eye[face.eyes.sizeL][eyes[face.eyes.typeL].left]:draw(midpoint-eyeX-eyeSize/2, midpoint+eyeY-eyeSize/2, mirrorLeft) -- left eye
+		asset.eye[face.eyes.sizeL][eyes[face.eyes.typeL].left]:draw(midpoint-eyeX-eyeSize/2, midpoint+eyeY-eyeSize/2, mirrorLeft)
         gfx.setImageDrawMode(gfx.kDrawModeCopy)
 
         -- draw nose
         local noseSize
         if face.nose.size == 1 then noseSize = 6 elseif face.nose.size == 2 then noseSize = 10 else noseSize = 14 end
         local noseY = face.nose.y*(l.nose.y.max-l.nose.y.min)+l.nose.y.min-2
-        if face.nose.invert == true then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
-        if heads[head.type].species == species.human then
-            asset.nose[face.nose.size][face.nose.type]:draw(midpoint-noseSize/2-5, midpoint+noseY-noseSize/2+5)
-        elseif heads[head.type].species == species.cat then
-            asset.nose[face.nose.size][face.nose.type]:draw(midpoint-11-noseSize/2, midpoint+6+3*head.height-noseSize/2)
-        elseif heads[head.type].species == species.dog then
-            asset.nose[face.nose.size][face.nose.type]:draw(midpoint-13-noseSize/2, midpoint+6+3*head.height-noseSize/2)
-        end
+
+		-- do a bunch of shit to properly render the skin tone on the nose while allowing for inverting the outline
+		local getMaskFromThis = gfx.image.new(noseSize, noseSize)
+		gfx.pushContext(getMaskFromThis)
+			gfx.setImageDrawMode(gfx.kDrawModeBlackTransparent)
+			asset.nose[face.nose.size][face.nose.type]:draw(0, 0)
+		gfx.popContext()
         gfx.setImageDrawMode(gfx.kDrawModeCopy)
+		local skinMask = getMaskFromThis:getMaskImage()
+		local skinImage = gfx.image.new(noseSize, noseSize)
+		gfx.pushContext(skinImage)
+			getMaskFromThis:draw(0, 0)
+			gfx.setColor(gfx.kColorBlack)
+			gfx.setDitherPattern(skin)
+			gfx.fillRect(0, 0, noseSize, noseSize)
+		gfx.popContext()
+		skinImage:setMaskImage(skinMask)
+
+        if face.nose.invert == true then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
+		local noseX, newNoseY
+        if heads[head.type].species == species.human then
+            noseX, newNoseY = midpoint-noseSize/2-5, midpoint+noseY-noseSize/2+5
+        elseif heads[head.type].species == species.cat then
+            noseX, newNoseY = midpoint-11-noseSize/2, midpoint+6+3*head.height-noseSize/2
+        elseif heads[head.type].species == species.dog then
+            noseX, newNoseY = midpoint-13-noseSize/2, midpoint+6+3*head.height-noseSize/2
+        end
+		asset.nose[face.nose.size][face.nose.type]:draw(noseX, newNoseY)
+        gfx.setImageDrawMode(gfx.kDrawModeCopy)
+		skinImage:draw(noseX, newNoseY)
 
         -- draw right eye
         if face.eyes.sizeR == 1 then eyeSize = 6 elseif face.eyes.sizeR == 2 then eyeSize = 10 else eyeSize = 14 end
