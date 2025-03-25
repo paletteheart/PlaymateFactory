@@ -82,71 +82,97 @@ function getFace()
 	local l = limit.face
 	gfx.pushContext(faceImage)
 		-- draw mouth
-		local mouthW
-		local mouthH
-        if face.mouth.size == 1 then mouthW = 6 mouthH = 5 elseif face.mouth.size == 2 then mouthW = 10 mouthH = 7 else mouthW = 14 mouthH = 10 end
-        if face.mouth.invert == true then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
-		local mouthY = face.mouth.y*(l.mouth.y.max-l.mouth.y.min)+l.mouth.y.min
-		local mirrorMouth = gfx.kImageUnflipped
-		if face.mouth.mirror then mirrorMouth = gfx.kImageFlippedX end
-		local mouthAdjustment = 0
-		if heads[head.type].species == species.dog then mouthAdjustment = 2 end
-		asset.mouth[face.mouth.size][face.mouth.type]:draw(midpoint-mouthW/2-mouthAdjustment, midpoint+mouthY+12-mouthH/2, mirrorMouth)
-        gfx.setImageDrawMode(gfx.kDrawModeCopy)
+		if face.mouth.show then
+			local mouthW
+			local mouthH
+			if face.mouth.size == 1 then mouthW = 6 mouthH = 5 elseif face.mouth.size == 2 then mouthW = 10 mouthH = 7 else mouthW = 14 mouthH = 10 end
+			if face.mouth.invert == true then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
+			local mouthY = face.mouth.y*(l.mouth.y.max-l.mouth.y.min)+l.mouth.y.min
+			local mirrorMouth = gfx.kImageUnflipped
+			if face.mouth.mirror then mirrorMouth = gfx.kImageFlippedX end
+			local mouthAdjustment = 0
+			if heads[head.type].species == species.dog then mouthAdjustment = 2 end
+			asset.mouth[face.mouth.size][face.mouth.type]:draw(midpoint-mouthW/2-mouthAdjustment, midpoint+mouthY+12-mouthH/2, mirrorMouth)
+			gfx.setImageDrawMode(gfx.kDrawModeCopy)
+		end
 
         -- draw left eye
         local eyeSize
-        if face.eyes.sizeL == 1 then eyeSize = 6 elseif face.eyes.sizeL == 2 then eyeSize = 10 else eyeSize = 14 end
-        if face.eyes.invert == true then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
 		local eyeX = face.eyes.x*(l.eyes.x.max-l.eyes.x.min)+l.eyes.x.min
 		local eyeY = face.eyes.y*(l.eyes.y.max-l.eyes.y.min)+l.eyes.y.min-2
-		local mirrorLeft = gfx.kImageUnflipped
-		if eyes[face.eyes.typeL].mirrorLeft then mirrorLeft = gfx.kImageFlippedX end
-		asset.eye[face.eyes.sizeL][eyes[face.eyes.typeL].left]:draw(midpoint-eyeX-eyeSize/2, midpoint+eyeY-eyeSize/2, mirrorLeft)
-        gfx.setImageDrawMode(gfx.kDrawModeCopy)
+		if face.eyes.showL then
+			if face.eyes.sizeL == 1 then eyeSize = 6 elseif face.eyes.sizeL == 2 then eyeSize = 10 else eyeSize = 14 end
+			if face.eyes.invertL == true then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
+			local mirrorLeft = gfx.kImageUnflipped
+			if eyes[face.eyes.typeL].mirrorLeft then mirrorLeft = gfx.kImageFlippedX end
+			asset.eye[face.eyes.sizeL][eyes[face.eyes.typeL].left]:draw(midpoint-eyeX-eyeSize/2, midpoint+eyeY-eyeSize/2, mirrorLeft)
+			gfx.setImageDrawMode(gfx.kDrawModeCopy)
+		end
+
+		-- draw left eyebrow
+		local browW
+		local browH
+		local browX = face.brows.x*(l.brows.x.max-l.brows.x.min)+l.brows.x.min
+		local browY = face.brows.y*(l.brows.y.max-l.brows.y.min)+l.brows.y.min-8
+		if face.brows.showL then
+			if face.brows.sizeL == 1 then browW = 6 browH = 3 elseif face.brows.sizeL == 2 then browW = 10 browH = 5 else browW = 14 browH = 7 end
+			if face.brows.invertL == true then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
+			asset.brow[face.brows.sizeL][face.brows.typeL]:draw(midpoint-browX-browW/2, midpoint+browY-browH/2, gfx.kImageFlippedX)
+			gfx.setImageDrawMode(gfx.kDrawModeCopy)
+		end
 
         -- draw nose
-        local noseSize
-        if face.nose.size == 1 then noseSize = 6 elseif face.nose.size == 2 then noseSize = 10 else noseSize = 14 end
-        local noseY = face.nose.y*(l.nose.y.max-l.nose.y.min)+l.nose.y.min-2
+		if face.nose.show then
+			local noseSize
+			if face.nose.size == 1 then noseSize = 6 elseif face.nose.size == 2 then noseSize = 10 else noseSize = 14 end
+			local noseY = face.nose.y*(l.nose.y.max-l.nose.y.min)+l.nose.y.min-2
 
-		-- do a bunch of shit to properly render the skin tone on the nose while allowing for inverting the outline
-		local getMaskFromThis = gfx.image.new(noseSize, noseSize)
-		gfx.pushContext(getMaskFromThis)
-			gfx.setImageDrawMode(gfx.kDrawModeBlackTransparent)
-			asset.nose[face.nose.size][face.nose.type]:draw(0, 0)
-		gfx.popContext()
-        gfx.setImageDrawMode(gfx.kDrawModeCopy)
-		local skinMask = getMaskFromThis:getMaskImage()
-		local skinImage = gfx.image.new(noseSize, noseSize)
-		gfx.pushContext(skinImage)
-			getMaskFromThis:draw(0, 0)
-			gfx.setColor(gfx.kColorBlack)
-			gfx.setDitherPattern(skin)
-			gfx.fillRect(0, 0, noseSize, noseSize)
-		gfx.popContext()
-		skinImage:setMaskImage(skinMask)
+			-- do a bunch of shit to properly render the skin tone on the nose while allowing for inverting the outline
+			local getMaskFromThis = gfx.image.new(noseSize, noseSize)
+			gfx.pushContext(getMaskFromThis)
+				gfx.setImageDrawMode(gfx.kDrawModeBlackTransparent)
+				asset.nose[face.nose.size][face.nose.type]:draw(0, 0)
+			gfx.popContext()
+			gfx.setImageDrawMode(gfx.kDrawModeCopy)
+			local skinMask = getMaskFromThis:getMaskImage()
+			local skinImage = gfx.image.new(noseSize, noseSize)
+			gfx.pushContext(skinImage)
+				getMaskFromThis:draw(0, 0)
+				gfx.setColor(gfx.kColorBlack)
+				gfx.setDitherPattern(skin)
+				gfx.fillRect(0, 0, noseSize, noseSize)
+			gfx.popContext()
+			skinImage:setMaskImage(skinMask)
 
-        if face.nose.invert == true then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
-		local noseX, newNoseY
-        if heads[head.type].species == species.human then
-            noseX, newNoseY = midpoint-noseSize/2-5, midpoint+noseY-noseSize/2+5
-        elseif heads[head.type].species == species.cat then
-            noseX, newNoseY = midpoint-11-noseSize/2, midpoint+6+3*head.height-noseSize/2
-        elseif heads[head.type].species == species.dog then
-            noseX, newNoseY = midpoint-13-noseSize/2, midpoint+6+3*head.height-noseSize/2
-        end
-		asset.nose[face.nose.size][face.nose.type]:draw(noseX, newNoseY)
-        gfx.setImageDrawMode(gfx.kDrawModeCopy)
-		skinImage:draw(noseX, newNoseY)
+			if face.nose.invert == true then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
+			local noseX, newNoseY
+			if heads[head.type].species == species.human then
+				noseX, newNoseY = midpoint-noseSize/2-5, midpoint+noseY-noseSize/2+5
+			elseif heads[head.type].species == species.cat then
+				noseX, newNoseY = midpoint-11-noseSize/2, midpoint+6+3*head.height-noseSize/2
+			elseif heads[head.type].species == species.dog then
+				noseX, newNoseY = midpoint-13-noseSize/2, midpoint+6+3*head.height-noseSize/2
+			end
+			asset.nose[face.nose.size][face.nose.type]:draw(noseX, newNoseY)
+			gfx.setImageDrawMode(gfx.kDrawModeCopy)
+			skinImage:draw(noseX, newNoseY)
+		end
 
         -- draw right eye
-        if face.eyes.sizeR == 1 then eyeSize = 6 elseif face.eyes.sizeR == 2 then eyeSize = 10 else eyeSize = 14 end
-        if face.eyes.invert == true then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
-		asset.eye[face.eyes.sizeR][eyes[face.eyes.typeR].right]:draw(midpoint+eyeX-eyeSize/2, midpoint+eyeY-eyeSize/2) -- right eye
-        gfx.setImageDrawMode(gfx.kDrawModeCopy)
+		if face.eyes.showR then
+			if face.eyes.sizeR == 1 then eyeSize = 6 elseif face.eyes.sizeR == 2 then eyeSize = 10 else eyeSize = 14 end
+			if face.eyes.invertR == true then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
+			asset.eye[face.eyes.sizeR][eyes[face.eyes.typeR].right]:draw(midpoint+eyeX-eyeSize/2, midpoint+eyeY-eyeSize/2) -- right eye
+			gfx.setImageDrawMode(gfx.kDrawModeCopy)
+		end
 
-
+		-- draw right eyebrow
+		if face.brows.showR then
+			if face.brows.sizeR == 1 then browW = 6 browH = 3 elseif face.brows.sizeR == 2 then browW = 10 browH = 5 else browW = 14 browH = 7 end
+			if face.brows.invertR == true then gfx.setImageDrawMode(gfx.kDrawModeInverted) end
+			asset.brow[face.brows.sizeR][face.brows.typeR]:draw(midpoint+browX-browW/2, midpoint+browY-browH/2)
+			gfx.setImageDrawMode(gfx.kDrawModeCopy)
+		end
 
 	gfx.popContext()
 

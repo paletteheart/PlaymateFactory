@@ -28,6 +28,18 @@ for i=1,#paths do
 	asset.eye[3][i] = gfx.image.new("assets/face/eyes/large/eyeL"..i)
 end
 
+asset.brow = {}
+asset.brow[1] = {} -- small brows
+asset.brow[2] = {} -- medium brows
+asset.brow[3] = {} -- large brows
+paths = pd.file.listFiles("assets/face/brows/medium")
+local browNum = #paths
+for i=1,#paths do
+	asset.brow[1][i] = gfx.image.new("assets/face/brows/small/browS"..i)
+	asset.brow[2][i] = gfx.image.new("assets/face/brows/medium/browM"..i)
+	asset.brow[3][i] = gfx.image.new("assets/face/brows/large/browL"..i)
+end
+
 asset.nose = {}
 asset.nose[1] = {} -- small noses
 asset.nose[2] = {} -- medium noses
@@ -377,29 +389,37 @@ face = {
 		y = 0.5,
         sizeR = size.medium,
         sizeL = size.medium,
-		invert = false
+		invertL = false,
+        invertR = false,
+        showL = true,
+        showR = true
 	},
 	brows = {
-		typeR = 1,
-        typeL = 1,
+		typeR = 3,
+        typeL = 3,
 		x = 0.5,
 		y = 0.5,
-        sizeR = size.medium,
         sizeL = size.medium,
-		invert = false
+        sizeR = size.medium,
+		invertL = false,
+        invertR = false,
+        showL = true,
+        showR = true
 	},
 	nose = {
 		type = 1,
 		y = 0.5,
         size = size.medium,
-		invert = true
+		invert = false,
+        show = true
 	},
 	mouth = {
 		type = 1,
-		y = 1,
+		y = 0.5,
         size = size.medium,
-        mirror = true,
-		invert = true
+        mirror = false,
+		invert = false,
+        show = true
 	},
 
 }
@@ -416,7 +436,7 @@ limit.face = {
 		}
 	},
 	brows = {
-		type = 1,
+		type = browNum,
 		x = {
 			min = 5,
 			max = 10
@@ -442,7 +462,7 @@ limit.face = {
 	}
 }
 
-skin = 0.5 -- 1 is pure white, 0 is pitch black
+skin = 1 -- 1 is pure white, 0 is pitch black
 
 handRadius = 6 -- gets modified by average body size
 footWidth = 20 -- gets modified by average body size

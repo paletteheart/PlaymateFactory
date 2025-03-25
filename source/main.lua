@@ -20,13 +20,13 @@ function playdate.update()
 	head.height = math.min(1, math.max(0, head.height+pd.getCrankChange()/450))
 	if pd.buttonJustPressed(pd.kButtonA) then face.eyes.invert = not face.eyes.invert end
 	if pd.buttonJustPressed(pd.kButtonB) then head.type = (head.type%limit.head.type)+1 end
-	if pd.buttonJustPressed(pd.kButtonRight) then face.mouth.type += 1 end
-	if pd.buttonJustPressed(pd.kButtonLeft) then face.mouth.type -= 1 end
-	if pd.buttonJustPressed(pd.kButtonUp) then face.mouth.size += 1 end
-	if pd.buttonJustPressed(pd.kButtonDown) then face.mouth.size -= 1 end
+	if pd.buttonJustPressed(pd.kButtonRight) then face.brows.typeR += 1 face.brows.typeL += 1 end
+	if pd.buttonJustPressed(pd.kButtonLeft) then face.brows.typeR -= 1 face.brows.typeL -= 1 end
+	if pd.buttonJustPressed(pd.kButtonUp) then face.brows.sizeR += 1 face.brows.sizeL += 1 end
+	if pd.buttonJustPressed(pd.kButtonDown) then face.brows.sizeR -= 1 face.brows.sizeL -= 1 end
 
-	face.mouth.type = math.min(limit.face.mouth.type, math.max(1, face.mouth.type))
-	face.mouth.size = math.min(3, math.max(1, face.mouth.size))
+	face.brows.typeR, face.brows.typeL = math.min(limit.face.brows.type, math.max(1, face.brows.typeR)), math.min(limit.face.brows.type, math.max(1, face.brows.typeR))
+	face.brows.sizeR, face.brows.sizeL = math.min(3, math.max(1, face.brows.sizeR)), math.min(3, math.max(1, face.brows.sizeR))
 
 	bodyWidth = body.width*(limit.body.width.max-limit.body.width.min)+limit.body.width.min
 	bodyHeight = body.height*(limit.body.height.max-limit.body.height.min)+limit.body.height.min
